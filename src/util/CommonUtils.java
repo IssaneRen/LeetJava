@@ -19,4 +19,14 @@ public class CommonUtils {
     public static String  array2String(int[] array) {
         return array2String(array, array != null ? array.length : 0);
     }
+
+    public static String array2String(int[][] array) {
+        StringBuilder builder = new StringBuilder("{");
+        for (int[] ints : array) {
+            builder.append(array2String(ints, ints != null ? ints.length : 0));
+            builder.append(", \n");
+        }
+        builder.append("}");
+        return builder.toString();
+    }
 }
