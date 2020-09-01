@@ -1,4 +1,4 @@
-package elementary_algorithm;
+package elementary_algorithm.array;
 
 import util.CommonUtils;
 
