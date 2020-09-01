@@ -73,7 +73,9 @@ public class Rotate {
          */
         int length = matrix.length, tmp1, tmp2;
         for (int i = 0; i < length / 2; i++) {
-            for (int j = i; j < matrix.length - 2 - i; j++) {
+//            System.out.println("current index: i=" + i + "; length / 2=" + (length / 2));
+            for (int j = i; j < matrix.length - 1 - i; j++) {
+//                System.out.println("current index: i=" + i + "; j=" + j + "; matrix.length - 2 - i = " + (matrix.length - 1 - i));
                 tmp1 = matrix[j][length-1-i];
                 matrix[j][length-1-i] = matrix[i][j];
                 tmp2 = matrix[length-1-i][length-1-j];
