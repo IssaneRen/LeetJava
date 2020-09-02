@@ -53,4 +53,19 @@ public class FirstUniqChar {
         }
         return -1;
     }
+
+    public static int firstUniqCharRef(String s) {
+        int ans = -1;
+        for (char ch = 'a'; ch <= 'z'; ch++) {
+            // 获取当前字符的索引位置
+            int index = s.indexOf(ch);
+            // 比较当前字符正向与反向的索引值是否相同
+            if (index != -1 && index == s.lastIndexOf(ch)) {
+                ans = (ans == -1 || ans > index) ? index: ans;
+            }
+        }
+        return ans;
+    }
+
+
 }
