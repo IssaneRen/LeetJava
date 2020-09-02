@@ -60,4 +60,34 @@ public class CommonUtils {
         builder.append("}");
         return builder.toString();
     }
+
+    public static String array2String(String[] array, int length) {
+        if (array == null)
+            return "NULL";
+        int finalLength = Math.min(length, array.length);
+        if (finalLength == 1)
+            return "{" + array[0] + "}";
+        StringBuilder builder = new StringBuilder("{");
+        builder.append(array[0]);
+        for (int i = 1; i < finalLength; i++) {
+            builder.append(", ");
+            builder.append(array[i]);
+        }
+        builder.append("}");
+        return builder.toString();
+    }
+
+    public static String array2String(String[] array) {
+        return array2String(array, array != null ? array.length : 0);
+    }
+
+    public static String array2String(String[][] array) {
+        StringBuilder builder = new StringBuilder("{");
+        for (String[] strings : array) {
+            builder.append(array2String(strings, strings != null ? strings.length : 0));
+            builder.append(", \n");
+        }
+        builder.append("}");
+        return builder.toString();
+    }
 }
