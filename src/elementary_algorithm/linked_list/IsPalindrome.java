@@ -28,15 +28,35 @@ public class IsPalindrome {
     public static void main(String[] args) {
 
         ListNode root = new ListNode(1);
-        root.next = new ListNode(2);
-        root.next.next = new ListNode(2);
-        root.next.next.next = new ListNode(1);
-//        root.next.next.next.next = new ListNode(5);
+//        root.next = new ListNode(2);
+//        root.next.next = new ListNode(2);
+//        root.next.next.next = new ListNode(2);
+//        root.next.next.next.next = new ListNode(1);
         System.out.println("{ linked_list=" + CommonUtils.linkedList2String(root) + ", result(isPalindrome)=" + isPalindrome(root) + "}");
     }
 
     public static boolean isPalindrome(ListNode head) {
+        ListNode fast = head, slow = head;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        boolean even = fast == null; // 偶数个单位
+        // 寻找结束，现在慢指针正好在后一半的第一个位置。如果是奇数个，在正中间
+        fast = head;
         Stack<Integer> stack = new Stack<>();
-        return false;
+        while (fast != slow) {
+            stack.push(fast.val);
+            fast = fast.next;
+        }
+        if (!even) {
+            slow = slow.next;
+        }
+        while (slow != null) {
+            if (slow.val != stack.pop())
+                return false;
+            slow = slow.next;
+        }
+        return true;
     }
 }
