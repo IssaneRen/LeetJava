@@ -42,8 +42,7 @@ public class DeleteNode {
     }
 
     public static void deleteNode(ListNode node) {
-        while (node.next != null) {
-//            if (node.val == )
-        }
+        node.val = node.next.val;
+        node.next = node.next.next;
     }
 }
