@@ -1,5 +1,7 @@
 package util;
 
+import elementary_algorithm.linked_list.ListNode;
+
 public class CommonUtils {
     public static String array2String(int[] array, int length) {
         if (array == null)
@@ -88,6 +90,23 @@ public class CommonUtils {
             builder.append(", \n");
         }
         builder.append("}");
+        return builder.toString();
+    }
+
+    public static String linkedList2String(ListNode root) {
+        if (root == null) {
+            return "null_list";
+        }
+        StringBuilder builder = new StringBuilder("[");
+        while (root != null) {
+            builder.append(root.val);
+            builder.append("->");
+            root = root.next;
+        }
+        if (builder.lastIndexOf("->") == builder.length() - 2) {
+            builder.delete(builder.length() - 2, builder.length());
+        }
+        builder.append("]");
         return builder.toString();
     }
 }
