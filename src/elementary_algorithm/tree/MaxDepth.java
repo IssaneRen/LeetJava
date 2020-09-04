@@ -44,6 +44,14 @@ public class MaxDepth {
         root.right.right = new TreeNode(21);
         root.right.left.left = new TreeNode(17);
         root.right.left.right = new TreeNode(19);
-        System.out.println("tree is : \n" + CommonUtils.binaryTree2String(root));
+        System.out.println("tree is : \n" + CommonUtils.binaryTree2String(root) + "\n and its maxdepth = " + maxDepth(root));
     }
+
+    public static int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+    }
+
 }
