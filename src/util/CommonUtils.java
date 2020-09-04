@@ -1,6 +1,7 @@
 package util;
 
 import elementary_algorithm.linked_list.ListNode;
+import elementary_algorithm.tree.TreeNode;
 
 public class CommonUtils {
     public static String array2String(int[] array, int length) {
@@ -108,5 +109,12 @@ public class CommonUtils {
         }
         builder.append("]");
         return builder.toString();
+    }
+
+    public static String binaryTree2String(TreeNode root) {
+        if (root == null) {
+            return "null_tree";
+        }
+        return BinaryTreeUtil.getBinaryTreeString(root);
     }
 }
