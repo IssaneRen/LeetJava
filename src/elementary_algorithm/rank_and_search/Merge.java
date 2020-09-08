@@ -2,6 +2,8 @@ package elementary_algorithm.rank_and_search;
 
 import util.CommonUtils;
 
+import java.util.Arrays;
+
 /**
  * 合并两个有序数组
  * 给你两个有序整数数组 nums1 和 nums2，请你将 nums2 合并到 nums1 中，使 nums1 成为一个有序数组。
@@ -36,11 +38,39 @@ public class Merge {
         System.out.println("This is Test log:\narray1 is : " + CommonUtils.array2String(array1) +
                 " \nand array2 = " + CommonUtils.array2String(array2) + "\n param1=" + param1 + "; param2=" + param2);
         Merge entity = new Merge();
-        entity.merge(array1, param1, array2, param2);
+        entity.merge2(array1, param1, array2, param2);
         System.out.println("merge result = " + CommonUtils.array2String(array1));
     }
 
     public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int cursor1 = m - 1, cursor2 = n - 1, cursorAll = m + n - 1;
+        int tmp1, tmp2;
+        while (cursor1 >= 0 || cursor2 >= 0) {
+            if (cursor1 < 0) {
+                System.arraycopy(nums2, 0, nums1, 0, cursor2 + 1);
+                break;
+            } else if (cursor2 < 0) {
+                break;
+            }
+            tmp1 = nums1[cursor1];
+            tmp2 = nums2[cursor2];
+            if (tmp1 > tmp2) {
+                nums1[cursorAll--] = tmp1;
+                cursor1--;
+            } else if (tmp1 < tmp2) {
+                nums1[cursorAll--] = tmp2;
+                cursor2--;
+            } else {
+                nums1[cursorAll--] = tmp1;
+                nums1[cursorAll--] = tmp2;
+                cursor1--;
+                cursor2--;
+            }
+        }
+    }
 
+    public void merge2(int[] nums1, int m, int[] nums2, int n) {
+        System.arraycopy(nums2, 0, nums1, m, n);
+        Arrays.sort(nums1);
     }
 }
