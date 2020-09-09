@@ -34,9 +34,9 @@ import java.util.Map;
  */
 public class ClimbStairs {
     public static void main(String[] args) {
-        int number = 44;
+        int number = 2;
         ClimbStairs entity = new ClimbStairs();
-        System.out.println("{Stairs Layer Number= " + number + "}, {paths number: " + entity.climbStairs(number) + "}");
+        System.out.println("{Stairs Layer Number= " + number + "}, {paths number: " + entity.climbStairs2(number) + "}");
     }
 
     /**
@@ -101,6 +101,21 @@ public class ClimbStairs {
         }
         return pathNumber;
 
+    }
+
+    /**
+     * 递归转迭代 f(n) = f(n-2) + f(n-1)
+     * @param n
+     * @return
+     */
+    public int climbStairs2(int n) {
+        int f1 = 1, f2 = 1, result = 1;
+        for (int i = 2; i <= n; i++) {
+            result = f2 + f1;
+            f1 = f2;
+            f2 = result;
+        }
+        return result;
     }
 
     private final static StringBuilder stringBuilder = new StringBuilder();
