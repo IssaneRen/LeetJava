@@ -25,12 +25,14 @@ public class CommonUtils {
     }
 
     public static String array2String(int[][] array) {
-        StringBuilder builder = new StringBuilder("{");
+        StringBuilder builder = new StringBuilder();
         for (int[] ints : array) {
             builder.append(array2String(ints, ints != null ? ints.length : 0));
             builder.append(", \n");
         }
-        builder.append("}");
+        if (builder.length() > 0) {
+            builder.deleteCharAt(builder.length() - 1);
+        }
         return builder.toString();
     }
 
