@@ -113,4 +113,22 @@ public class GetIntersectionNode {
         }
         return null;
     }
+
+    /**
+     * 参考答案里的双指针，说实话看到这个题就想到了双指针，但是直到看到这个答案我还是没有那么理解。。。
+     *
+     * 最小公倍数的感觉。。。好像都为null之后就是一次公共循环
+     * @param headA
+     * @param headB
+     * @return
+     */
+    public ListNode getIntersectionNode2(ListNode headA, ListNode headB) {
+        //l1+l2 = l2+l1，双指针
+        ListNode pa = headA, pb = headB;
+        while(pa != pb){
+            pa = pa==null ? headB : pa.next;
+            pb = pb==null ? headA : pb.next;
+        }
+        return pa;
+    }
 }
