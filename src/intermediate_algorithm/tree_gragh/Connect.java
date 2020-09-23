@@ -45,6 +45,21 @@ public class Connect {
     }
 
     public Node connect(Node root) {
-        return null;
+        if (root == null) return null;
+        Node temp = root, currentLayerFirst;
+        int currentLayerLength = 1;
+        while (temp.left != null) {  // 还有孩子
+            currentLayerFirst = temp;
+            for (int i = 0; i + 1 < currentLayerLength; i++) {
+                temp.left.next = temp.right;
+                temp.right.next = temp.next.left;
+                temp = temp.next;
+            }
+            temp.left.next = temp.right;  // 最后一个节点，特殊处理，因为其右子节点不用动
+            temp = currentLayerFirst.left;
+            currentLayerLength = currentLayerLength << 1;
+        }
+
+        return root;
     }
 }
