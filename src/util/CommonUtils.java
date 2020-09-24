@@ -3,6 +3,9 @@ package util;
 import elementary_algorithm.linked_list.ListNode;
 import elementary_algorithm.tree.TreeNode;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class CommonUtils {
     public static String array2String(int[] array, int length) {
         if (array == null)
@@ -118,5 +121,33 @@ public class CommonUtils {
             return "null_tree";
         }
         return BinaryTreeUtil.getBinaryTreeString(root);
+    }
+
+    public static TreeNode arrayToTree(Integer[] array) {
+        int arrayLength = array != null ? array.length : 0;
+        if (arrayLength <= 0) {
+            return null;
+        } else if (arrayLength == 1) {
+            return new TreeNode(array[0]);
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        TreeNode root = new TreeNode(array[0]), temp = root;
+        Integer tempInt;
+        queue.offer(root);
+        int index = 1;
+        while ((temp = queue.poll()) != null) {
+            tempInt = array[index++];
+            if (tempInt != null) {
+                temp.left = new TreeNode(tempInt);
+                queue.offer(temp.left);
+            }
+            if (index >= arrayLength) return root;
+            tempInt = array[index++];
+            if (tempInt != null) {
+                temp.right = new TreeNode(tempInt);
+                queue.offer(temp.right);
+            }
+        }
+        return root;
     }
 }
