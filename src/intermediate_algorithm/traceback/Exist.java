@@ -60,8 +60,94 @@ public class Exist {
 
         System.out.println("TEST PROGRAM: ========== \nword: " + word
                 + "\n board:\n " + CommonUtils.array2String(board)
-                + "\n exist:  " + new Exist().exist(board, word));
+                + "\n exist:  " + new Exist().exist2(board, word));
 
+    }
+
+    public boolean exist2(char[][] board, String word) {
+        // 1. 获取长度
+        if (word == null || word.length() == 0) return true;
+        if (board == null || board.length == 0 || board[0] == null || board[0].length == 0) return false;
+        final int height = board.length, width = board[0].length;
+        // 2. 遍历board，从左往右 从上往下
+        char firstChar = word.charAt(0);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                // 3.1 找到要找的word char
+                System.out.println("Loop - search First - x = " + i + "; y = " + j);
+                if (firstChar == board[i][j] && judgeNodeLegal(board, word, i, j)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static final int[][] offset = new int[][]{{0, 1, 0, -1}, {-1, 0, 1, 0}};
+    public static final int XMask = 0b111111111000000000;
+
+    public boolean judgeNodeLegal(char[][] board, String word, int startX, int startY) {
+        boolean needClearNextBack = false;
+        // 1. 构造stack，为了缓存遍历过的节点  --- 是一个int型， 0~199表示x值，200~399表示y值
+        Stack<Integer> stack = new Stack<>();
+        // 2. 获取长度
+        int wordLength = word.length(), stringCursor = 1, currentX = startX, currentY = startY, tempX, tempY;  // stringCursor 从第二个字符开始找
+        // 3. 正式开启寻找的循环，对当前的startPosition
+        char currentSearchingChar = word.charAt(stringCursor);
+        boolean found = false;
+        while (stringCursor < wordLength) {
+            // 3.1 对当前节点，的上下左右 四个节点依次遍历
+            System.out.println("Loop - search word - stringCursor = " + stringCursor);
+            found = false;
+            for (int i = 0; i < 4; i++) {
+                System.out.println("Loop - search 4 neighbor ,  i = " + i);
+                tempX = currentX + offset[0][i];
+                tempY = currentY + offset[1][i];
+                if (tempX < 0 || tempY < 0 || tempX >= board.length || tempY >= board[0].length) continue;
+                if (currentSearchingChar == board[tempX][tempY]) {
+                    if (checkInStack(tempX, tempY, stack)) continue;
+                    found = true;
+                    if (needClearNextBack) {
+                        stack.pop();
+                        needClearNextBack = false;
+                    }
+                    currentX = tempX;
+                    currentY = tempY;
+                    stack.add((tempX << 9) + tempY);
+                    currentSearchingChar = word.charAt(++stringCursor);
+                    break;
+                }
+            }
+            if (!found) {
+                stringCursor--;
+                if (needClearNextBack) {
+                    stack.pop();
+                } else {
+                    needClearNextBack = true;
+                }
+                if (stack.isEmpty()) {
+                    currentX = startX;
+                    currentY = startY;
+                } else {
+                    tempX = stack.peek();
+                    currentX = tempX >> 9;
+                    currentY = tempX & ~XMask;
+                }
+                if (stringCursor < 0) return false;
+                currentSearchingChar = word.charAt(stringCursor);
+            }
+        }
+        return true;
+    }
+
+    public static boolean checkInStack(int x, int y, Stack<Integer> stack) {
+//        if (stack == null) return false;
+        for (int i : stack) {
+            if ((i & ~XMask) == y && (i >>> 9) == x) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
