@@ -87,49 +87,53 @@ public class Exist {
     public static final int XMask = 0b111111111000000000;
 
     public boolean judgeNodeLegal(char[][] board, String word, int startX, int startY) {
-        boolean needClearNextBack = false;
         // 1. 构造stack，为了缓存遍历过的节点  --- 是一个int型， 0~199表示x值，200~399表示y值
         Stack<Integer> stack = new Stack<>();
+        List<Integer> tempList = new ArrayList<>();
         // 2. 获取长度
         int wordLength = word.length(), stringCursor = 1, currentX = startX, currentY = startY, tempX, tempY;  // stringCursor 从第二个字符开始找
         // 3. 正式开启寻找的循环，对当前的startPosition
-        char currentSearchingChar = word.charAt(stringCursor);
-        boolean found = false;
+        char currentSearchingChar = word.charAt(stringCursor); // 第0个已经找到了，这里从第一个开始找
+        boolean found = false, lastFound = false;
         while (stringCursor < wordLength) {
             // 3.1 对当前节点，的上下左右 四个节点依次遍历
             System.out.println("Loop - search word - stringCursor = " + stringCursor);
             found = false;
+            // for 循环四次，找上下左右的节点，如果找到了，Break，并且标记
             for (int i = 0; i < 4; i++) {
                 System.out.println("Loop - search 4 neighbor ,  i = " + i);
                 tempX = currentX + offset[0][i];
                 tempY = currentY + offset[1][i];
                 if (tempX < 0 || tempY < 0 || tempX >= board.length || tempY >= board[0].length) continue;
                 if (currentSearchingChar == board[tempX][tempY]) {
-                    if (checkInStack(tempX, tempY, stack)) continue;
+                    if (checkInStack(tempX, tempY, stack) || checkInStack(tempX, tempY, tempList)) continue;
                     found = true;
-                    if (needClearNextBack) {
-                        stack.pop();
-                        needClearNextBack = false;
+                    if (tempList.size() > 0) {
+                        tempList.clear();
                     }
                     currentX = tempX;
                     currentY = tempY;
+                    lastFound = true;
                     stack.add((tempX << 9) + tempY);
                     currentSearchingChar = word.charAt(++stringCursor);
                     break;
                 }
             }
-            if (!found) {
+             if (!found) {
+                 if (lastFound) {
+                     lastFound = false;
+                     if (!stack.isEmpty()) {
+                         tempX = stack.pop();
+                         tempList.add(tempX);
+                     }
+                 }
                 stringCursor--;
-                if (needClearNextBack) {
-                    stack.pop();
-                } else {
-                    needClearNextBack = true;
-                }
                 if (stack.isEmpty()) {
                     currentX = startX;
                     currentY = startY;
                 } else {
-                    tempX = stack.peek();
+                    tempX = stack.pop();
+                    tempList.add(tempX);
                     currentX = tempX >> 9;
                     currentY = tempX & ~XMask;
                 }
@@ -140,9 +144,9 @@ public class Exist {
         return true;
     }
 
-    public static boolean checkInStack(int x, int y, Stack<Integer> stack) {
+    public static boolean checkInStack(int x, int y, List<Integer> list) {
 //        if (stack == null) return false;
-        for (int i : stack) {
+        for (int i : list) {
             if ((i & ~XMask) == y && (i >>> 9) == x) {
                 return true;
             }
