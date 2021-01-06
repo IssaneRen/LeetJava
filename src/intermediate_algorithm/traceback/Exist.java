@@ -53,8 +53,17 @@ public class Exist {
 //        String word = "ABCB";
 //        char[][] board = new char[][]{{'C','A','A'},{'A','A','A'},{'B','C','D'}};
 //        String word = "AAB";
-        char[][] board = new char[][]{{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
-        String word = "ABCESEEEFS";
+//        char[][] board = new char[][]{{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
+//        String word = "ABCESEEEFS";
+        char[][] board = new char[][]{{'A', 'A'}};
+        String word = "AAA";
+
+//        char[][] board = new char[][]{
+//                {'A','B','C','E'},
+//                {'S','F','C','S'},
+//                {'A','D','E','E'}};
+//        String word = "ABCB"; // false
+
 //        char[][] board = new char[][]{{'a','a','a','a'},{'a','a','a','a'},{'a','a','a','a'}};
 //        String word = "aaaaaaaaaaaaa";
 
@@ -74,8 +83,7 @@ public class Exist {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 // 3.1 找到要找的word char
-                System.out.println("Loop - search First - x = " + i + "; y = " + j);
-                if (firstChar == board[i][j] && judgeNodeLegal(board, word, i, j)) {
+                if (firstChar == board[i][j] && judgeNodeLegalWithRecurse(board, word, i, j)) {
                     return true;
                 }
             }
@@ -84,66 +92,52 @@ public class Exist {
     }
 
     public static final int[][] offset = new int[][]{{0, 1, 0, -1}, {-1, 0, 1, 0}};
-    public static final int XMask = 0b111111111000000000;
+//    /**
+//     * 用来标记某一次检查循环中。 所有节点周围四个节点的遍历情况。
+//     * key：  是一个int型， 0~199表示x值，200~399表示y值
+//     * value:
+//     */
+//    public static final HashMap<Integer, Integer> markNode = new HashMap<>(); //
+    public static final Stack<Integer> traceNodes = new Stack<>(); //
 
-    public boolean judgeNodeLegal(char[][] board, String word, int startX, int startY) {
-        // 1. 构造stack，为了缓存遍历过的节点  --- 是一个int型， 0~199表示x值，200~399表示y值
-        Stack<Integer> stack = new Stack<>();
-        List<Integer> tempList = new ArrayList<>();
-        // 2. 获取长度
-        int wordLength = word.length(), stringCursor = 1, currentX = startX, currentY = startY, tempX, tempY;  // stringCursor 从第二个字符开始找
-        // 3. 正式开启寻找的循环，对当前的startPosition
-        char currentSearchingChar = word.charAt(stringCursor); // 第0个已经找到了，这里从第一个开始找
-        boolean found = false, lastFound = false;
-        while (stringCursor < wordLength) {
-            // 3.1 对当前节点，的上下左右 四个节点依次遍历
-            System.out.println("Loop - search word - stringCursor = " + stringCursor);
-            found = false;
-            // for 循环四次，找上下左右的节点，如果找到了，Break，并且标记
-            for (int i = 0; i < 4; i++) {
-                System.out.println("Loop - search 4 neighbor ,  i = " + i);
-                tempX = currentX + offset[0][i];
-                tempY = currentY + offset[1][i];
-                if (tempX < 0 || tempY < 0 || tempX >= board.length || tempY >= board[0].length) continue;
-                if (currentSearchingChar == board[tempX][tempY]) {
-                    if (checkInStack(tempX, tempY, stack) || checkInStack(tempX, tempY, tempList)) continue;
-                    found = true;
-                    if (tempList.size() > 0) {
-                        tempList.clear();
-                    }
-                    currentX = tempX;
-                    currentY = tempY;
-                    lastFound = true;
-                    stack.add((tempX << 9) + tempY);
-                    currentSearchingChar = word.charAt(++stringCursor);
-                    break;
-                }
-            }
-             if (!found) {
-                 if (lastFound) {
-                     lastFound = false;
-                     if (!stack.isEmpty()) {
-                         tempX = stack.pop();
-                         tempList.add(tempX);
-                     }
-                 }
-                stringCursor--;
-                if (stack.isEmpty()) {
-                    currentX = startX;
-                    currentY = startY;
-                } else {
-                    tempX = stack.pop();
-                    tempList.add(tempX);
-                    currentX = tempX >> 9;
-                    currentY = tempX & ~XMask;
-                }
-                if (stringCursor < 0) return false;
-                currentSearchingChar = word.charAt(stringCursor);
-            }
-        }
-        return true;
+    public boolean judgeNodeLegalWithRecurse(char[][] board, String word, int startX, int startY) {
+        if (word.length() <= 1) return true;
+        traceNodes.clear();
+        traceNodes.push((startX << 9) + startY);
+        return recurseCheckWord(board, word, startX, startY, 1);
     }
 
+    /**
+     *
+     * @param currentStringCursor 注意 这里的 currentStringCursor 是当前正要找的下一个字母的index
+     * @return 是否能够找到路径。
+     */
+    public boolean recurseCheckWord(char[][] board, String word, int currentX, int currentY, int currentStringCursor) {
+        int tempX, tempY;
+        char currentSearchingChar = word.charAt(currentStringCursor);
+        for (int i = 0; i < 4; i++) {
+            tempX = currentX + offset[0][i];
+            tempY = currentY + offset[1][i];
+            if (tempX < 0 || tempY < 0 || tempX >= board.length || tempY >= board[0].length) continue;
+            if (checkInStack(tempX, tempY, traceNodes)) continue;
+            if (currentSearchingChar == board[tempX][tempY]) { // 找到了当前正在寻找的字母！
+                traceNodes.push((tempX << 9) + tempY);
+                // 1. 当前的这个字母就是最后一个位置，直接return true
+                if (currentStringCursor + 1 == word.length()) {
+                    return true;
+                }
+                // 2. 当前的这个字母一直往后走，真的能return true
+                if (recurseCheckWord(board, word, tempX, tempY, currentStringCursor + 1)) {
+                    return true;
+                }
+                // 3. 当前这个字母往后走不能return true了
+                traceNodes.pop();
+            }
+        };
+        return false;
+    }
+
+    public static final int XMask = 0b111111111000000000;
     public static boolean checkInStack(int x, int y, List<Integer> list) {
 //        if (stack == null) return false;
         for (int i : list) {
@@ -154,112 +148,170 @@ public class Exist {
         return false;
     }
 
+
+    /**
+     * 判断某一个节点是否是合法节点。 调用该方法时候，请务必保证已经找到了stringCursor为0的节点位置、
+     * @return
+     */
+//    public boolean judgeNodeLegal(char[][] board, String word, int startX, int startY) {
+//        // 1. 构造stack，为了缓存遍历过的节点  --- 是一个int型， 0~199表示x值，200~399表示y值
+//        Stack<Integer> stack = new Stack<>();
+//        // 2. 获取长度
+//        //
+//        int wordLength = word.length(), stringCursor = 1, currentX = startX, currentY = startY, tempX, tempY;  // stringCursor 从第二个字符开始找
+//        // 3. 正式开启寻找的循环，对当前的startPosition
+//        char currentSearchingChar = word.charAt(stringCursor); // 第0个已经找到了，这里从第一个开始找
+//        boolean found = false, lastFound = false;
+//        while (stringCursor < wordLength) {
+//            // 3.1 对当前节点，的上右下左 四个节点依次遍历
+//            System.out.println("Loop - search word - stringCursor = " + stringCursor);
+//            found = false;
+//            // for 循环四次，找上下左右的节点，如果找到了，Break，并且标记
+//            for (int i = 0; i < 4; i++) {
+//                System.out.println("Loop - search 4 neighbor ,  i = " + i);
+//                tempX = currentX + offset[0][i];
+//                tempY = currentY + offset[1][i];
+//                if (tempX < 0 || tempY < 0 || tempX >= board.length || tempY >= board[0].length) continue;
+//                if (currentSearchingChar == board[tempX][tempY]) {
+//                    if (checkInStack(tempX, tempY, stack)) continue;
+//                    found = true;
+//                    currentX = tempX;
+//                    currentY = tempY;
+//                    lastFound = true;
+//                    stack.add((tempX << 9) + tempY);
+//                    currentSearchingChar = word.charAt(++stringCursor);
+//                    break;
+//                }
+//            }
+//             if (!found) {
+//                 if (lastFound) {
+//                     lastFound = false;
+//                     if (!stack.isEmpty()) {
+//                         tempX = stack.pop();
+//                     }
+//                 }
+//                stringCursor--;
+//                if (stack.isEmpty()) {
+//                    currentX = startX;
+//                    currentY = startY;
+//                } else {
+//                    tempX = stack.pop();
+//                    currentX = tempX >> 9;
+//                    currentY = tempX & ~XMask;
+//                }
+//                if (stringCursor < 0) return false;
+//                currentSearchingChar = word.charAt(stringCursor);
+//            }
+//        }
+//        return true;
+//    }
+
     /**
      * 1. 尝试使用BFS搜索  ---- 失败 改成DFS
      */
-    public boolean exist(char[][] board, String word) {
-        if (word == null || word.length() <= 0) {
-            return true;
-        }
-//        Queue<List<Integer>> queue = new ArrayDeque<>();  // 3个成员的list  {0} -- 对应string位置 {1,2} 对应在board的x/y位置 //bfs
-        Stack<List<Integer>> stack = new Stack<>();
-        char findingChar = word.charAt(0);
-        List<Integer> temp = new ArrayList<>(3);
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[0].length; j++) {
-                if (board[i][j] == findingChar) {
-                    if (word.length() == 1)
-                        return true;
-                    temp.clear();
-                    temp.add(0, 0);
-                    temp.add(1, i);
-                    temp.add(2, j);
-                    stack.clear();
-                    stack.push(temp);
-//                    queue.clear();
-//                    queue.offer(temp);
-                    if (isRightDotWithDfs(board, word, stack)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-
-    public boolean isRightDotWithDfs(char[][] board, String word, Stack<List<Integer>> stack) {
-//        // 注意 这里我们假定输入一定合法 即---未越界，且这个xy点一定符合当前条件
-//        if (board[x][y] != word.charAt(0)) {
-//            return false;
+//    public boolean exist(char[][] board, String word) {
+//        if (word == null || word.length() <= 0) {
+//            return true;
 //        }
-        List<Integer> temp, tempNext;
-        boolean [][] visited = new boolean[board.length][board[0].length];
-        temp = stack.peek();
-        int toReleaseX, toReleaseY;
-        visited[temp.get(1)][temp.get(2)] = true;
-        tempNext = getNearestUnvisitedNode(board, temp, visited, word);
-        while (!stack.isEmpty()) {
-            // 1. 每次循环，首先deep first
-            while (tempNext != null) {
-                if (tempNext.get(0) == word.length() - 1) {
-                    return true;
-                }
-                visited[tempNext.get(1)][tempNext.get(2)] = true;
-                stack.push(tempNext);
-                temp = tempNext;
-                tempNext = getNearestUnvisitedNode(board, temp, visited, word);
-            }
-            if (!stack.empty()) stack.pop();
-            // 2. 当遇到deep瓶颈时候，回溯  --- 注意，到了这个条件下，一定tempNext为null
-            while (!stack.empty() && tempNext == null) {
-                toReleaseX = temp.get(1);
-                toReleaseY = temp.get(2);
-                temp = stack.pop();
-                tempNext = getNearestUnvisitedNode(board, temp, visited, word);
-                if (tempNext == null) {
-                    visited[toReleaseX][toReleaseY] = false;
-                }
-            }
-            if (tempNext != null) {
-                stack.push(temp);
-            }
-        }
-        return false;
-    }
+////        Queue<List<Integer>> queue = new ArrayDeque<>();  // 3个成员的list  {0} -- 对应string位置 {1,2} 对应在board的x/y位置 //bfs
+//        Stack<List<Integer>> stack = new Stack<>();
+//        char findingChar = word.charAt(0);
+//        List<Integer> temp = new ArrayList<>(3);
+//        for (int i = 0; i < board.length; i++) {
+//            for (int j = 0; j < board[0].length; j++) {
+//                if (board[i][j] == findingChar) {
+//                    if (word.length() == 1)
+//                        return true;
+//                    temp.clear();
+//                    temp.add(0, 0);
+//                    temp.add(1, i);
+//                    temp.add(2, j);
+//                    stack.clear();
+//                    stack.push(temp);
+////                    queue.clear();
+////                    queue.offer(temp);
+//                    if (isRightDotWithDfs(board, word, stack)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
-    public List<Integer> getNearestUnvisitedNode(char[][] board, List<Integer> currentNode, boolean [][] visited, String word) {
-        int x = currentNode.get(1), y = currentNode.get(2), currentPosition = currentNode.get(0);
-        char temp, toFind = word.charAt(currentPosition + 1);
-        List<Integer> result = new ArrayList<>();
-        for (int i = -1; i < 2; i+=2) {
-            try {
-                temp = board[x][y+i];
-                if (!visited[x][y+i] && temp == toFind) {
-                    visited[x][y+i] = true;
-                    result.add(currentPosition + 1);
-                    result.add(x);
-                    result.add(y+i);
-                    return result;
-                }
-            } catch (Exception e) {
-            }
-        }
-        for (int i = -1; i < 2; i+=2) {
-            try {
-                temp = board[x+i][y];
-                if (!visited[x+i][y] && temp == toFind) {
-                    visited[x+i][y] = true;
-                    result.add(currentPosition + 1);
-                    result.add(x+i);
-                    result.add(y);
-                    return result;
-                }
-            } catch (Exception e) {
-            }
-        }
-        return null;
-    }
+
+//    public boolean isRightDotWithDfs(char[][] board, String word, Stack<List<Integer>> stack) {
+////        // 注意 这里我们假定输入一定合法 即---未越界，且这个xy点一定符合当前条件
+////        if (board[x][y] != word.charAt(0)) {
+////            return false;
+////        }
+//        List<Integer> temp, tempNext;
+//        boolean [][] visited = new boolean[board.length][board[0].length];
+//        temp = stack.peek();
+//        int toReleaseX, toReleaseY;
+//        visited[temp.get(1)][temp.get(2)] = true;
+//        tempNext = getNearestUnvisitedNode(board, temp, visited, word);
+//        while (!stack.isEmpty()) {
+//            // 1. 每次循环，首先deep first
+//            while (tempNext != null) {
+//                if (tempNext.get(0) == word.length() - 1) {
+//                    return true;
+//                }
+//                visited[tempNext.get(1)][tempNext.get(2)] = true;
+//                stack.push(tempNext);
+//                temp = tempNext;
+//                tempNext = getNearestUnvisitedNode(board, temp, visited, word);
+//            }
+//            if (!stack.empty()) stack.pop();
+//            // 2. 当遇到deep瓶颈时候，回溯  --- 注意，到了这个条件下，一定tempNext为null
+//            while (!stack.empty() && tempNext == null) {
+//                toReleaseX = temp.get(1);
+//                toReleaseY = temp.get(2);
+//                temp = stack.pop();
+//                tempNext = getNearestUnvisitedNode(board, temp, visited, word);
+//                if (tempNext == null) {
+//                    visited[toReleaseX][toReleaseY] = false;
+//                }
+//            }
+//            if (tempNext != null) {
+//                stack.push(temp);
+//            }
+//        }
+//        return false;
+//    }
+
+//    public List<Integer> getNearestUnvisitedNode(char[][] board, List<Integer> currentNode, boolean [][] visited, String word) {
+//        int x = currentNode.get(1), y = currentNode.get(2), currentPosition = currentNode.get(0);
+//        char temp, toFind = word.charAt(currentPosition + 1);
+//        List<Integer> result = new ArrayList<>();
+//        for (int i = -1; i < 2; i+=2) {
+//            try {
+//                temp = board[x][y+i];
+//                if (!visited[x][y+i] && temp == toFind) {
+//                    visited[x][y+i] = true;
+//                    result.add(currentPosition + 1);
+//                    result.add(x);
+//                    result.add(y+i);
+//                    return result;
+//                }
+//            } catch (Exception e) {
+//            }
+//        }
+//        for (int i = -1; i < 2; i+=2) {
+//            try {
+//                temp = board[x+i][y];
+//                if (!visited[x+i][y] && temp == toFind) {
+//                    visited[x+i][y] = true;
+//                    result.add(currentPosition + 1);
+//                    result.add(x+i);
+//                    result.add(y);
+//                    return result;
+//                }
+//            } catch (Exception e) {
+//            }
+//        }
+//        return null;
+//    }
 
 
 //    public boolean isRightDotWithBfs(char[][] board, String word, Queue<List<Integer>> queue) {
